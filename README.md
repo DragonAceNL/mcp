@@ -68,3 +68,11 @@ Point each server at its built DLL and set its `env` block, e.g.:
            "EDGEROUTER_PRIVATE_KEY_PATH": "<path-to-ssh-key>" }
 }
 ```
+
+## License
+
+[MIT](LICENSE) © 2026 Dragon Ace.
+
+You're free to use, modify, and redistribute this code — commercially or not —
+**as long as you keep the copyright notice and license text** (that's the only
+condition: credit the original author).
