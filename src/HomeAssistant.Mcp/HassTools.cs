@@ -56,12 +56,13 @@ public sealed class HassTools(HassClient client)
     }
 
     [McpServerTool(Name = "ha_call_service")]
-    [Description("Call any Home Assistant service. domain+service like \"light\"/\"turn_on\", \"switch\"/\"toggle\", \"scene\"/\"turn_on\". Provide entity_id to target, and any extra service data.")]
+    [Description("Call any Home Assistant service. domain+service like \"light\"/\"turn_on\", \"switch\"/\"toggle\", \"scene\"/\"turn_on\". Provide entity_id to target, and any extra service data. HA waits for the service to finish before replying, so slow services (backups) need a longer timeout_s; backup/restore services are auto-extended.")]
     public async Task<string> CallService(
         [Description("Service domain, e.g. \"light\", \"switch\", \"cover\", \"scene\".")] string domain,
         [Description("Service name, e.g. \"turn_on\", \"turn_off\", \"toggle\".")] string service,
         [Description("Target entity (or comma-separated list). Optional for services that do not need a target.")] string? entity_id = null,
         [Description("Extra service data merged into the call, e.g. {\"brightness_pct\":40,\"color_temp_kelvin\":2700}.")] JsonElement? data = null,
+        [Description("Override the request timeout in seconds. Use for long-running services; defaults to HASS_TIMEOUT_MS, or 600s for backup/restore services.")] int? timeout_s = null,
         CancellationToken ct = default)
     {
         var payload = new Dictionary<string, object?>();
@@ -70,9 +71,17 @@ public sealed class HassTools(HassClient client)
                 payload[p.Name] = JsonToObject(p.Value);
         if (entity_id is not null)
             payload["entity_id"] = entity_id.Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
-        var res = await client.CallServiceAsync(domain, service, payload, ct);
+        var timeout = timeout_s is > 0 ? TimeSpan.FromSeconds(timeout_s.Value)
+            : IsLongRunning(domain, service) ? TimeSpan.FromSeconds(600)
+            : (TimeSpan?)null;
+        var res = await client.CallServiceAsync(domain, service, payload, ct, timeout);
         return $"Called {domain}.{service}. Result:\n{Pretty(res)}";
     }
+
+    // HA blocks the HTTP response until these finish, which can take minutes.
+    private static bool IsLongRunning(string domain, string service)
+        => domain == "backup"
+            || (domain == "hassio" && (service.StartsWith("backup", StringComparison.Ordinal) || service.StartsWith("restore", StringComparison.Ordinal)));
 
     [McpServerTool(Name = "ha_light")]
     [Description("Convenience for lights: turn a light on/off/toggle, with optional brightness percent, color temperature (Kelvin), or RGB colour.")]

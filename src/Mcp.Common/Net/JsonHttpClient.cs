@@ -18,6 +18,9 @@ public sealed class JsonHttpClient : IDisposable
     public JsonHttpClient(string? baseUrl = null, TimeSpan? timeout = null, IEnumerable<KeyValuePair<string, string>>? defaultHeaders = null)
     {
         _http = new HttpClient();
+        // Per-request timeouts are enforced via CancellationTokens below, so disable
+        // HttpClient's own 100s cap (it would otherwise override longer overrides).
+        _http.Timeout = Timeout.InfiniteTimeSpan;
         if (!string.IsNullOrEmpty(baseUrl))
             _http.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
         _timeout = timeout ?? TimeSpan.FromSeconds(10);
@@ -32,17 +35,18 @@ public sealed class JsonHttpClient : IDisposable
         WriteIndented = true,
     };
 
-    private CancellationTokenSource NewCts(CancellationToken outer)
+    private CancellationTokenSource NewCts(CancellationToken outer, TimeSpan? timeout = null)
     {
         var cts = CancellationTokenSource.CreateLinkedTokenSource(outer);
-        cts.CancelAfter(_timeout);
+        cts.CancelAfter(timeout ?? _timeout);
         return cts;
     }
 
     /// <summary>Send a request and return status + raw body text.</summary>
-    public async Task<(HttpStatusCode Status, string Body)> SendAsync(HttpRequestMessage req, CancellationToken ct = default)
+    public async Task<(HttpStatusCode Status, string Body)> SendAsync(HttpRequestMessage req, CancellationToken ct = default, TimeSpan? timeout = null)
     {
-        using var cts = NewCts(ct);
+        var effective = timeout ?? _timeout;
+        using var cts = NewCts(ct, effective);
         try
         {
             using var res = await _http.SendAsync(req, cts.Token).ConfigureAwait(false);
@@ -51,7 +55,7 @@ public sealed class JsonHttpClient : IDisposable
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
-            throw new TimeoutException($"Timeout after {_timeout.TotalMilliseconds:0}ms calling {req.RequestUri}");
+            throw new TimeoutException($"Timeout after {effective.TotalMilliseconds:0}ms calling {req.RequestUri}");
         }
     }
 

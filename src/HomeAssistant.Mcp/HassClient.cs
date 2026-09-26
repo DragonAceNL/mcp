@@ -38,12 +38,12 @@ public sealed class HassClient
         return string.Empty; // unreachable
     }
 
-    private async Task<string> RequestAsync(HttpMethod method, string path, object? body = null, CancellationToken ct = default)
+    private async Task<string> RequestAsync(HttpMethod method, string path, object? body = null, CancellationToken ct = default, TimeSpan? timeout = null)
     {
         var req = new HttpRequestMessage(method, "api" + path);
         if (body is not null)
             req.Content = new StringContent(JsonSerializer.Serialize(body), System.Text.Encoding.UTF8, "application/json");
-        var (status, text) = await _http.SendAsync(req, ct).ConfigureAwait(false);
+        var (status, text) = await _http.SendAsync(req, ct, timeout).ConfigureAwait(false);
         if (!IsSuccess(status))
         {
             var hint = status == HttpStatusCode.Unauthorized ? " (401 Unauthorized — check the Long-Lived Access Token)" : "";
@@ -69,8 +69,8 @@ public sealed class HassClient
     public async Task<JsonElement> GetServicesAsync(CancellationToken ct = default)
         => JsonHttpClient.ParseJson(await RequestAsync(HttpMethod.Get, "/services", null, ct));
 
-    public async Task<string> CallServiceAsync(string domain, string service, object data, CancellationToken ct = default)
-        => await RequestAsync(HttpMethod.Post, $"/services/{Uri.EscapeDataString(domain)}/{Uri.EscapeDataString(service)}", data, ct);
+    public async Task<string> CallServiceAsync(string domain, string service, object data, CancellationToken ct = default, TimeSpan? timeout = null)
+        => await RequestAsync(HttpMethod.Post, $"/services/{Uri.EscapeDataString(domain)}/{Uri.EscapeDataString(service)}", data, ct, timeout);
 
     public Task<string> RenderTemplateAsync(string template, CancellationToken ct = default)
         => RequestAsync(HttpMethod.Post, "/template", new { template }, ct);
