@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EdgeRouter.Mcp/EdgeRouter.Mcp.csproj" />
+    <Project Path="src/HomeAssistant.Mcp/HomeAssistant.Mcp.csproj" />
+    <Project Path="src/Mcp.Common/Mcp.Common.csproj" />
+    <Project Path="src/Synology.Mcp/Synology.Mcp.csproj" />
+    <Project Path="src/Tasmota.Mcp/Tasmota.Mcp.csproj" />
+    <Project Path="src/Tomato.Mcp/Tomato.Mcp.csproj" />
+    <Project Path="src/Windows.Mcp/Windows.Mcp.csproj" />
+    <Project Path="src/XiongMai.Mcp/XiongMai.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Mcp.Validate/Mcp.Validate.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,59 @@
+# ── .NET build output ──────────────────────────────────────────────
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+artifacts/
+
+# ── Build / restore artifacts ──────────────────────────────────────
+*.binlog
+project.assets.json
+project.nuget.cache
+*.nuget.props
+*.nuget.targets
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# ── Test / coverage ────────────────────────────────────────────────
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coverdcover
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# ── IDE / editor ───────────────────────────────────────────────────
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+.idea/
+*.swp
+*~
+
+# ── OS cruft ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Secrets / local config (never commit) ──────────────────────────
+*.pfx
+*.key
+*.pem
+secrets.json
+appsettings.*.local.json
+.env
+.env.*
+
+# ── Tasmota MCP local discovery cache ──────────────────────────────
+.tasmota-mcp-cache.json

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>XiongMai.Mcp</AssemblyName>
+    <RootNamespace>XiongMai.Mcp</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mcp.Common\Mcp.Common.csproj" />
+  </ItemGroup>
+</Project>
